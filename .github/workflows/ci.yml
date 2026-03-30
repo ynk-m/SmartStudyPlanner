@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 jobs:
   # ── Backend CI ───────────────────────────────────────────
   backend:
@@ -87,62 +82,39 @@ jobs:
       - name: Test
         run: npx ng test --watch=false --browsers=ChromeHeadless || true
 
-  # ── Deploy Frontend to GitHub Pages ──────────────────────
-  deploy-frontend:
-    name: Deploy Frontend
-    needs: frontend
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-        working-directory: frontend
-
-      - name: Build for production
-        run: npx ng build --base-href /SmartStudyPlanner/
-        working-directory: frontend
-
-      - name: Add 404.html for SPA routing
-        run: cp dist/frontend/browser/index.html dist/frontend/browser/404.html
-        working-directory: frontend
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: frontend/dist/frontend/browser
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-  # ── Deploy Backend to Railway ────────────────────────────
-  deploy-backend:
-    name: Deploy Backend
-    needs: backend
+  # ── Deploy to Raspberry Pi ───────────────────────────────
+  deploy:
+    name: Deploy to Raspberry Pi
+    needs: [backend, frontend]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PI_HOST }}
+          username: ${{ secrets.PI_USER }}
+          key: ${{ secrets.PI_SSH_KEY }}
+          script: |
+            export APP_DIR=/opt/smartstudy
 
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
+            # Clone or pull
+            if [ -d "$APP_DIR" ]; then
+              cd "$APP_DIR"
+              git fetch origin main
+              git reset --hard origin/main
+            else
+              sudo mkdir -p "$APP_DIR"
+              sudo chown $USER:$USER "$APP_DIR"
+              git clone https://github.com/ynk-m/SmartStudyPlanner.git "$APP_DIR"
+              cd "$APP_DIR"
+            fi
 
-      - name: Deploy to Railway
-        run: railway up --service backend --detach
-        working-directory: backend
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+            # Build and restart
+            docker compose -f docker-compose.prod.yml build
+            docker compose -f docker-compose.prod.yml up -d
+            docker image prune -f
+
+            echo "Deploy complete"
+            docker compose -f docker-compose.prod.yml ps

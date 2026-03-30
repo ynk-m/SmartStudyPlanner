@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { Dashboard } from '../../models/dashboard.model';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {

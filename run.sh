@@ -43,7 +43,7 @@ echo -e "${GREEN}Backend ready at http://localhost:8080${NC}"
 # 3. Start Frontend
 echo -e "${CYAN}Starting Frontend...${NC}"
 cd "$PROJECT_DIR/frontend"
-npm start &
+NG_CLI_ANALYTICS=false npx ng serve &
 FRONTEND_PID=$!
 
 echo -e "${GREEN}Frontend starting at http://localhost:4200${NC}"
