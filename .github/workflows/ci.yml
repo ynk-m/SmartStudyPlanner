@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -6,8 +6,13 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  # ── Backend ──────────────────────────────────────────────
+  # ── Backend CI ───────────────────────────────────────────
   backend:
     name: Backend (Java)
     runs-on: ubuntu-latest
@@ -52,7 +57,7 @@ jobs:
           SPRING_DATASOURCE_USERNAME: smartstudy
           SPRING_DATASOURCE_PASSWORD: smartstudy
 
-  # ── Frontend ─────────────────────────────────────────────
+  # ── Frontend CI ──────────────────────────────────────────
   frontend:
     name: Frontend (Angular)
     runs-on: ubuntu-latest
@@ -74,10 +79,70 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: npx ng lint || true  # lint not configured yet, don't fail
+        run: npx ng lint || true
 
       - name: Build
         run: npx ng build
 
       - name: Test
-        run: npx ng test --watch=false --browsers=ChromeHeadless || true  # tests not wired yet
+        run: npx ng test --watch=false --browsers=ChromeHeadless || true
+
+  # ── Deploy Frontend to GitHub Pages ──────────────────────
+  deploy-frontend:
+    name: Deploy Frontend
+    needs: frontend
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Build for production
+        run: npx ng build --base-href /SmartStudyPlanner/
+        working-directory: frontend
+
+      - name: Add 404.html for SPA routing
+        run: cp dist/frontend/browser/index.html dist/frontend/browser/404.html
+        working-directory: frontend
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist/frontend/browser
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # ── Deploy Backend to Railway ────────────────────────────
+  deploy-backend:
+    name: Deploy Backend
+    needs: backend
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        run: railway up --service backend --detach
+        working-directory: backend
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
