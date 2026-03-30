@@ -1,0 +1,48 @@
+<div class="space-y-4">
+  <div class="flex items-center justify-between">
+    <h2 class="text-lg font-semibold">Exams</h2>
+    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+      + New Exam
+    </button>
+  </div>
+
+  @for (exam of exams; track exam.id) {
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-medium">{{ exam.title }}</h3>
+          <p class="text-sm text-gray-500">{{ exam.courseName }}</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="text-right">
+            <p class="text-2xl font-bold" [class.text-red-600]="exam.daysRemaining <= 3"
+               [class.text-yellow-600]="exam.daysRemaining > 3 && exam.daysRemaining <= 7"
+               [class.text-green-600]="exam.daysRemaining > 7">
+              {{ exam.daysRemaining }}d
+            </p>
+            <p class="text-xs text-gray-500">remaining</p>
+          </div>
+          <div class="w-32">
+            <div class="flex justify-between text-xs text-gray-500 mb-1">
+              <span>Progress</span>
+              <span>{{ exam.progress * 100 | number:'1.0-0' }}%</span>
+            </div>
+            <div class="bg-gray-200 rounded-full h-2">
+              <div class="bg-blue-600 h-2 rounded-full transition-all"
+                   [style.width.%]="exam.progress * 100"></div>
+            </div>
+          </div>
+          <button (click)="generateSessions(exam.id)"
+                  class="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700 transition-colors">
+            Generate Sessions
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+  @empty {
+    <div class="bg-white rounded-lg shadow p-12 text-center">
+      <p class="text-gray-500">No exams yet. Create one to get started!</p>
+    </div>
+  }
+</div>

@@ -1,0 +1,83 @@
+@if (dashboard) {
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-sm font-medium text-gray-500">Today's Sessions</h3>
+      <p class="mt-2 text-3xl font-bold text-gray-900">{{ dashboard.todaySessions.length }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-sm font-medium text-gray-500">Weekly Study Hours</h3>
+      <p class="mt-2 text-3xl font-bold text-gray-900">{{ dashboard.weeklyStudyHours | number:'1.1-1' }}h</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-sm font-medium text-gray-500">Sessions This Week</h3>
+      <p class="mt-2 text-3xl font-bold text-gray-900">
+        {{ dashboard.completedSessionsThisWeek }}/{{ dashboard.totalScheduledSessionsThisWeek }}
+      </p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Upcoming Exams -->
+    <div class="bg-white rounded-lg shadow">
+      <div class="p-6 border-b">
+        <h2 class="text-lg font-semibold">Upcoming Exams</h2>
+      </div>
+      <div class="divide-y">
+        @for (exam of dashboard.upcomingExams; track exam.id) {
+          <div class="p-4 flex items-center justify-between">
+            <div>
+              <p class="font-medium">{{ exam.title }}</p>
+              <p class="text-sm text-gray-500">{{ exam.courseName }}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-medium" [class.text-red-600]="exam.daysRemaining <= 3"
+                 [class.text-yellow-600]="exam.daysRemaining > 3 && exam.daysRemaining <= 7"
+                 [class.text-green-600]="exam.daysRemaining > 7">
+                {{ exam.daysRemaining }}d left
+              </p>
+              <div class="w-24 bg-gray-200 rounded-full h-2 mt-1">
+                <div class="bg-blue-600 h-2 rounded-full" [style.width.%]="exam.progress * 100"></div>
+              </div>
+            </div>
+          </div>
+        }
+        @empty {
+          <p class="p-4 text-gray-500">No upcoming exams</p>
+        }
+      </div>
+    </div>
+
+    <!-- Today's Sessions -->
+    <div class="bg-white rounded-lg shadow">
+      <div class="p-6 border-b">
+        <h2 class="text-lg font-semibold">Today's Sessions</h2>
+      </div>
+      <div class="divide-y">
+        @for (session of dashboard.todaySessions; track session.id) {
+          <div class="p-4 flex items-center justify-between">
+            <div>
+              <p class="font-medium">{{ session.subchapterName }}</p>
+              <p class="text-sm text-gray-500">{{ session.courseName }}</p>
+            </div>
+            <div class="text-right">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    [class.bg-blue-100]="session.status === 'SCHEDULED'"
+                    [class.text-blue-800]="session.status === 'SCHEDULED'"
+                    [class.bg-green-100]="session.status === 'COMPLETED'"
+                    [class.text-green-800]="session.status === 'COMPLETED'">
+                {{ session.status }}
+              </span>
+            </div>
+          </div>
+        }
+        @empty {
+          <p class="p-4 text-gray-500">No sessions today</p>
+        }
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="flex items-center justify-center h-64">
+    <p class="text-gray-500">Loading dashboard...</p>
+  </div>
+}

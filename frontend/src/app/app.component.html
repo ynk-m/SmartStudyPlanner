@@ -1,0 +1,31 @@
+<div class="min-h-screen bg-gray-100">
+  <!-- Header -->
+  <header class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <h1 class="text-xl font-bold text-gray-900">SmartStudyPlanner</h1>
+      <nav class="flex gap-1">
+        <a routerLink="/dashboard" routerLinkActive="bg-blue-100 text-blue-700"
+           class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+          Dashboard
+        </a>
+        <a routerLink="/calendar" routerLinkActive="bg-blue-100 text-blue-700"
+           class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+          Calendar
+        </a>
+        <a routerLink="/exams" routerLinkActive="bg-blue-100 text-blue-700"
+           class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+          Exams
+        </a>
+        <a routerLink="/courses" routerLinkActive="bg-blue-100 text-blue-700"
+           class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+          Courses
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <router-outlet />
+  </main>
+</div>
