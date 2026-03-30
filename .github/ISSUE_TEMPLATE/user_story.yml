@@ -1,0 +1,30 @@
+name: User Story
+description: Define a feature from the user's perspective
+labels: ["user-story"]
+body:
+  - type: textarea
+    id: story
+    attributes:
+      label: User Story
+      description: "As a [type of user], I want [goal], so that [benefit]"
+      placeholder: "As a student, I want to create a study schedule, so that I can manage my time effectively"
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: List the conditions that must be met for this story to be complete
+      placeholder: |
+        - [ ] User can ...
+        - [ ] System validates ...
+        - [ ] UI displays ...
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Mockups, screenshots, or any extra details
+    validations:
+      required: false

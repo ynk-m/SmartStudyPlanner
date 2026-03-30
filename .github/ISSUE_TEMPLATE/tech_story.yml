@@ -1,0 +1,28 @@
+name: Tech Story
+description: Technical task or improvement (not directly user-facing)
+labels: ["tech-story"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What needs to be done and why
+      placeholder: "Set up CI pipeline to run tests on every PR"
+    validations:
+      required: true
+  - type: textarea
+    id: technical-details
+    attributes:
+      label: Technical Details
+      description: Implementation approach, affected components, dependencies
+    validations:
+      required: true
+  - type: textarea
+    id: done-criteria
+    attributes:
+      label: Definition of Done
+      description: How do we know this is complete?
+      placeholder: |
+        - [ ] ...
+    validations:
+      required: true
