@@ -87,34 +87,15 @@ jobs:
     name: Deploy to Raspberry Pi
     needs: [backend, frontend]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.PI_HOST }}
-          username: ${{ secrets.PI_USER }}
-          key: ${{ secrets.PI_SSH_KEY }}
-          script: |
-            export APP_DIR=/opt/smartstudy
+      - uses: actions/checkout@v4
 
-            # Clone or pull
-            if [ -d "$APP_DIR" ]; then
-              cd "$APP_DIR"
-              git fetch origin main
-              git reset --hard origin/main
-            else
-              sudo mkdir -p "$APP_DIR"
-              sudo chown $USER:$USER "$APP_DIR"
-              git clone https://github.com/ynk-m/SmartStudyPlanner.git "$APP_DIR"
-              cd "$APP_DIR"
-            fi
-
-            # Build and restart
-            docker compose -f docker-compose.prod.yml build
-            docker compose -f docker-compose.prod.yml up -d
-            docker image prune -f
-
-            echo "Deploy complete"
-            docker compose -f docker-compose.prod.yml ps
+      - name: Build and deploy
+        run: |
+          docker compose -f docker-compose.prod.yml build
+          docker compose -f docker-compose.prod.yml up -d
+          docker image prune -f
+          echo "=== Deploy complete ==="
+          docker compose -f docker-compose.prod.yml ps
