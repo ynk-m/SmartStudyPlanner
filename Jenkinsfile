@@ -2,41 +2,25 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY = 'ghcr.io'
-        IMAGE_BACKEND = 'ghcr.io/ynk-m/smartstudy-backend'
-        IMAGE_FRONTEND = 'ghcr.io/ynk-m/smartstudy-frontend'
         APP_DIR = '/opt/smartstudy'
     }
 
     stages {
-        stage('Login to GHCR') {
+        stage('Pull Latest Code') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'ghcr-credentials',
-                    usernameVariable: 'GHCR_USER',
-                    passwordVariable: 'GHCR_TOKEN'
-                )]) {
-                    sh 'echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin'
-                }
+                sh "cd ${APP_DIR} && git pull origin main"
             }
         }
 
-        stage('Pull Images') {
+        stage('Build Images') {
             steps {
-                sh """
-                    docker pull ${IMAGE_BACKEND}:latest
-                    docker pull ${IMAGE_FRONTEND}:latest
-                """
+                sh "cd ${APP_DIR} && docker compose -f docker-compose.prod.yml build --pull"
             }
         }
 
         stage('Deploy') {
             steps {
-                sh """
-                    cd ${APP_DIR}
-                    docker compose -f docker-compose.ghcr.yml pull
-                    docker compose -f docker-compose.ghcr.yml up -d
-                """
+                sh "cd ${APP_DIR} && docker compose -f docker-compose.prod.yml up -d"
             }
         }
 
@@ -49,7 +33,7 @@ pipeline {
 
     post {
         always {
-            sh 'docker logout ghcr.io || true'
+            sh "cd ${APP_DIR} && docker image prune -f || true"
         }
     }
 }
