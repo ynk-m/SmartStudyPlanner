@@ -1,26 +1,16 @@
 pipeline {
     agent any
 
-    environment {
-        APP_DIR = '/opt/smartstudy'
-    }
-
     stages {
-        stage('Pull Latest Code') {
-            steps {
-                sh "cd ${APP_DIR} && git pull origin main"
-            }
-        }
-
         stage('Build Images') {
             steps {
-                sh "cd ${APP_DIR} && docker compose -f docker-compose.prod.yml build --pull"
+                sh "docker compose -f docker-compose.prod.yml build --pull"
             }
         }
 
         stage('Deploy') {
             steps {
-                sh "cd ${APP_DIR} && docker compose -f docker-compose.prod.yml up -d"
+                sh "docker compose -f docker-compose.prod.yml up -d"
             }
         }
 
@@ -33,7 +23,7 @@ pipeline {
 
     post {
         always {
-            sh "cd ${APP_DIR} && docker image prune -f || true"
+            sh "docker image prune -f || true"
         }
     }
 }
